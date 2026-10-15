@@ -1,4 +1,3 @@
-
 // ==========================================
 // LÓGICA PRINCIPAL - PRESIDENCIA JUVENIL IMBABURA
 // ==========================================
@@ -6,25 +5,21 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ------------------------------------------
-    // 1. MENÚ DE HAMBURGUESA PARA CELULARES
+    // 1. MENÚ HAMBURGUESA PARA CELULARES
     // ------------------------------------------
     const navbar = document.querySelector('.navbar');
-    const nav = navbar ? navbar.querySelector('nav') : null;
-    const navLinks = nav ? nav.querySelector('.nav-links') : null;
+    const nav = navbar?.querySelector('nav');
+    const navLinks = nav?.querySelector('.nav-links');
 
-    // El botón se crea desde JavaScript para evitar
-    // tener que modificar el HTML en este paso.
     if (navbar && nav && navLinks) {
-
         let menuToggle = navbar.querySelector('.menu-toggle');
 
         if (!menuToggle) {
             menuToggle = document.createElement('button');
             menuToggle.type = 'button';
             menuToggle.className = 'menu-toggle';
-            menuToggle.setAttribute('aria-label', 'Abrir menú de navegación');
+            menuToggle.setAttribute('aria-label', 'Abrir menú');
             menuToggle.setAttribute('aria-expanded', 'false');
-            menuToggle.setAttribute('aria-controls', 'menu-principal');
 
             menuToggle.innerHTML = `
                 <span></span>
@@ -35,292 +30,328 @@ document.addEventListener('DOMContentLoaded', () => {
             navbar.insertBefore(menuToggle, nav);
         }
 
-        // Identificador del menú
-        if (!navLinks.id) {
-            navLinks.id = 'menu-principal';
-        }
-
-        // Abre y cierra el menú al tocar el botón
         menuToggle.addEventListener('click', () => {
-            const menuAbierto = nav.classList.toggle('menu-open');
+            const abierto = nav.classList.toggle('menu-open');
 
-            menuToggle.classList.toggle('active', menuAbierto);
-            menuToggle.setAttribute('aria-expanded', String(menuAbierto));
+            menuToggle.classList.toggle('active', abierto);
+            menuToggle.setAttribute('aria-expanded', String(abierto));
             menuToggle.setAttribute(
                 'aria-label',
-                menuAbierto
-                    ? 'Cerrar menú de navegación'
-                    : 'Abrir menú de navegación'
+                abierto ? 'Cerrar menú' : 'Abrir menú'
             );
         });
 
-        // Cierra el menú al seleccionar una página
         navLinks.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 nav.classList.remove('menu-open');
                 menuToggle.classList.remove('active');
                 menuToggle.setAttribute('aria-expanded', 'false');
-                menuToggle.setAttribute(
-                    'aria-label',
-                    'Abrir menú de navegación'
-                );
+                menuToggle.setAttribute('aria-label', 'Abrir menú');
             });
         });
 
-        // Cierra el menú al pulsar Escape
         document.addEventListener('keydown', event => {
             if (event.key === 'Escape') {
                 nav.classList.remove('menu-open');
                 menuToggle.classList.remove('active');
                 menuToggle.setAttribute('aria-expanded', 'false');
-                menuToggle.setAttribute(
-                    'aria-label',
-                    'Abrir menú de navegación'
-                );
+                menuToggle.setAttribute('aria-label', 'Abrir menú');
             }
         });
 
-        // Si se vuelve al formato de escritorio,
-        // restablece el estado del menú móvil.
         window.addEventListener('resize', () => {
             if (window.innerWidth > 768) {
                 nav.classList.remove('menu-open');
                 menuToggle.classList.remove('active');
                 menuToggle.setAttribute('aria-expanded', 'false');
-                menuToggle.setAttribute(
-                    'aria-label',
-                    'Abrir menú de navegación'
-                );
             }
         });
     }
 
+
     // ------------------------------------------
-    // 2. ENVÍO DEL FORMULARIO A WHATSAPP
+    // 2. FORMULARIO DE CONTACTO POR WHATSAPP
     // ------------------------------------------
     const contactForm = document.getElementById('contactForm');
 
     if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+        contactForm.addEventListener('submit', event => {
+            event.preventDefault();
 
-            const tipo = document.getElementById('tipoSolicitud').value;
-            const nombre = document.getElementById('nombre').value;
-            const telefono = document.getElementById('telefono').value;
-            const email = document.getElementById('email').value;
-            const mensaje = document.getElementById('mensaje').value;
+            const obtenerValor = id =>
+                document.getElementById(id)?.value?.trim() || '';
 
-            // Formato de texto para WhatsApp
+            const tipo = obtenerValor('tipoSolicitud');
+            const nombre = obtenerValor('nombre');
+            const telefono = obtenerValor('telefono');
+            const email = obtenerValor('email');
+            const mensaje = obtenerValor('mensaje');
+
             const textoWhatsApp =
                 `*NUEVO CONTACTO DESDE LA WEB INSTITUCIONAL*\n\n` +
-                `*Tipo de Solicitud:* ${tipo}\n` +
+                `*Tipo de solicitud:* ${tipo}\n` +
                 `*Nombre:* ${nombre}\n` +
                 `*Teléfono:* ${telefono}\n` +
                 `*Correo:* ${email}\n\n` +
                 `*Mensaje / Detalle:*\n${mensaje}`;
 
-            // Número oficial de la Presidencia Juvenil de Imbabura
             const numeroOficial = '593989173974';
 
             const urlWhatsApp =
-                `https://wa.me/${numeroOficial}?text=${encodeURIComponent(textoWhatsApp)}`;
+                `https://wa.me/${numeroOficial}?text=` +
+                encodeURIComponent(textoWhatsApp);
 
-            // Abre el chat de WhatsApp
             window.open(urlWhatsApp, '_blank');
         });
     }
 
-    // ------------------------------------------
-    // 3. INTERACTIVIDAD DE TARJETAS 3D (CANDIDATAS)
-    // ------------------------------------------
-    const interactiveCards = document.querySelectorAll('.interactive-card');
 
-    interactiveCards.forEach(card => {
-        card.addEventListener('click', () => {
-            card.classList.toggle('flipped');
+    // ------------------------------------------
+    // 3. TARJETAS 3D DE LAS CANDIDATAS
+    // ------------------------------------------
+    const interactiveCards =
+        document.querySelectorAll('.interactive-card');
+
+    // En computadoras, el efecto lo controla el CSS con :hover.
+    // En celulares, el toque activa o desactiva la tarjeta.
+    const dispositivoTactil =
+        window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+    if (dispositivoTactil) {
+        interactiveCards.forEach(card => {
+            card.addEventListener('click', event => {
+                // Evita que un enlace o botón interior active el giro.
+                if (event.target.closest('a, button')) return;
+
+                card.classList.toggle('flipped');
+            });
         });
-    });
-
-    // ------------------------------------------
-    // 4. CARRUSEL DE REINAS ANTERIORES
-    // ------------------------------------------
-    const reinaTrack = document.getElementById('carouselTrack');
-    const reinaSlides = reinaTrack
-        ? Array.from(reinaTrack.children)
-        : [];
-
-    const reinaPrevBtn = document.getElementById('prevBtn');
-    const reinaNextBtn = document.getElementById('nextBtn');
-    const reinaDotsContainer = document.getElementById('carouselDots');
-
-    if (reinaTrack && reinaSlides.length > 0) {
-        let currentReinaIndex = 0;
-
-        if (reinaDotsContainer) {
-            reinaDotsContainer.innerHTML = '';
-
-            reinaSlides.forEach((_, idx) => {
-                const dot = document.createElement('span');
-
-                dot.classList.add('dot');
-                dot.setAttribute('role', 'button');
-                dot.setAttribute('tabindex', '0');
-                dot.setAttribute(
-                    'aria-label',
-                    `Ver diapositiva ${idx + 1}`
-                );
-
-                if (idx === 0) {
-                    dot.classList.add('active');
-                }
-
-                dot.addEventListener('click', () => {
-                    goToReinaSlide(idx);
-                });
-
-                dot.addEventListener('keydown', event => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        goToReinaSlide(idx);
-                    }
-                });
-
-                reinaDotsContainer.appendChild(dot);
-            });
-        }
-
-        const reinaDots = reinaDotsContainer
-            ? Array.from(reinaDotsContainer.children)
-            : [];
-
-        function updateReinaCarousel() {
-            reinaTrack.style.transform =
-                `translateX(-${currentReinaIndex * 100}%)`;
-
-            reinaDots.forEach((dot, index) => {
-                dot.classList.toggle(
-                    'active',
-                    index === currentReinaIndex
-                );
-            });
-        }
-
-        function goToReinaSlide(index) {
-            currentReinaIndex = index;
-            updateReinaCarousel();
-        }
-
-        if (reinaNextBtn) {
-            reinaNextBtn.addEventListener('click', () => {
-                currentReinaIndex =
-                    (currentReinaIndex + 1) % reinaSlides.length;
-
-                updateReinaCarousel();
-            });
-        }
-
-        if (reinaPrevBtn) {
-            reinaPrevBtn.addEventListener('click', () => {
-                currentReinaIndex =
-                    (currentReinaIndex - 1 + reinaSlides.length) %
-                    reinaSlides.length;
-
-                updateReinaCarousel();
-            });
-        }
     }
 
+
     // ------------------------------------------
-    // 5. CARRUSEL DE REELS DE INSTAGRAM
+    // 4. FUNCIÓN GENERAL PARA LOS CARRUSELES
     // ------------------------------------------
-    const igTrack = document.getElementById('igCarouselTrack');
-    const igSlides = igTrack
-        ? Array.from(igTrack.children)
-        : [];
+    function configurarCarrusel(
+        trackId,
+        prevBtnId,
+        nextBtnId,
+        dotsContainerId
+    ) {
+        const track = document.getElementById(trackId);
+        const prevBtn = document.getElementById(prevBtnId);
+        const nextBtn = document.getElementById(nextBtnId);
+        const dotsContainer =
+            document.getElementById(dotsContainerId);
 
-    const igPrevBtn = document.getElementById('igPrevBtn');
-    const igNextBtn = document.getElementById('igNextBtn');
-    const igDotsContainer = document.getElementById('igDotsContainer');
+        if (!track) return;
 
-    if (igTrack && igSlides.length > 0) {
-        let currentIgIndex = 0;
+        const slides = Array.from(track.children);
 
-        if (igDotsContainer) {
-            igDotsContainer.innerHTML = '';
+        if (slides.length === 0) return;
 
-            igSlides.forEach((_, idx) => {
-                const dot = document.createElement('span');
+        let indiceActual = Math.max(
+            0,
+            slides.findIndex(slide => slide.classList.contains('active'))
+        );
 
-                dot.classList.add('dot');
-                dot.setAttribute('role', 'button');
-                dot.setAttribute('tabindex', '0');
-                dot.setAttribute(
-                    'aria-label',
-                    `Ver Reel ${idx + 1}`
-                );
+        let dots = [];
 
-                if (idx === 0) {
-                    dot.classList.add('active');
-                }
+        // Conserva los indicadores del HTML cuando coinciden
+        // con el número de diapositivas.
+        if (dotsContainer) {
+            dots = Array.from(
+                dotsContainer.querySelectorAll('.dot')
+            );
 
-                dot.addEventListener('click', () => {
-                    goToIgSlide(idx);
+            if (dots.length !== slides.length) {
+                dotsContainer.innerHTML = '';
+
+                slides.forEach((_, index) => {
+                    const dot = document.createElement('span');
+
+                    dot.className = 'dot';
+                    dot.setAttribute('role', 'button');
+                    dot.setAttribute('tabindex', '0');
+                    dot.setAttribute(
+                        'aria-label',
+                        `Ver diapositiva ${index + 1}`
+                    );
+
+                    dotsContainer.appendChild(dot);
                 });
 
-                dot.addEventListener('keydown', event => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        goToIgSlide(idx);
-                    }
-                });
-
-                igDotsContainer.appendChild(dot);
-            });
-        }
-
-        const igDots = igDotsContainer
-            ? Array.from(igDotsContainer.children)
-            : [];
-
-        function updateIgCarousel() {
-            igTrack.style.transform =
-                `translateX(-${currentIgIndex * 100}%)`;
-
-            igDots.forEach((dot, index) => {
-                dot.classList.toggle(
-                    'active',
-                    index === currentIgIndex
+                dots = Array.from(
+                    dotsContainer.querySelectorAll('.dot')
                 );
-            });
-
-            // Actualiza los reproductores de Instagram
-            if (window.instgrm && window.instgrm.Embeds) {
-                window.instgrm.Embeds.process();
             }
         }
 
-        function goToIgSlide(index) {
-            currentIgIndex = index;
-            updateIgCarousel();
-        }
+        function mostrarDiapositiva(indice) {
+            indiceActual =
+                (indice + slides.length) % slides.length;
 
-        if (igNextBtn) {
-            igNextBtn.addEventListener('click', () => {
-                currentIgIndex =
-                    (currentIgIndex + 1) % igSlides.length;
+            track.style.transform =
+                `translateX(-${indiceActual * 100}%)`;
 
-                updateIgCarousel();
+            slides.forEach((slide, index) => {
+                slide.classList.toggle(
+                    'active',
+                    index === indiceActual
+                );
+            });
+
+            dots.forEach((dot, index) => {
+                dot.classList.toggle(
+                    'active',
+                    index === indiceActual
+                );
+
+                dot.setAttribute(
+                    'aria-pressed',
+                    String(index === indiceActual)
+                );
             });
         }
 
-        if (igPrevBtn) {
-            igPrevBtn.addEventListener('click', () => {
-                currentIgIndex =
-                    (currentIgIndex - 1 + igSlides.length) %
-                    igSlides.length;
-
-                updateIgCarousel();
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                mostrarDiapositiva(indiceActual + 1);
             });
+        }
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                mostrarDiapositiva(indiceActual - 1);
+            });
+        }
+
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                mostrarDiapositiva(index);
+            });
+
+            dot.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    mostrarDiapositiva(index);
+                }
+            });
+        });
+
+        mostrarDiapositiva(indiceActual);
+
+        return {
+            siguiente: () => mostrarDiapositiva(indiceActual + 1),
+            anterior: () => mostrarDiapositiva(indiceActual - 1),
+            mostrar: mostrarDiapositiva
+        };
+    }
+
+
+    // ------------------------------------------
+    // 5. CARRUSEL DE CONÓCENOS
+    //    VICEPRESIDENTES ANTERIORES
+    // ------------------------------------------
+    configurarCarrusel(
+        'directivosTrack',
+        'prevDirectivo',
+        'nextDirectivo',
+        'directivosDots'
+    );
+
+
+    // ------------------------------------------
+    // 6. CARRUSEL DE REINADO
+    //    REINAS ANTERIORES
+    // ------------------------------------------
+    configurarCarrusel(
+        'reinasTrack',
+        'prevReina',
+        'nextReina',
+        'carouselDots'
+    );
+
+
+    // ------------------------------------------
+    // 7. CARRUSEL DE REELS DE INSTAGRAM
+    // ------------------------------------------
+    const igTrack = document.getElementById('igCarouselTrack');
+
+    if (igTrack) {
+        const igSlides = Array.from(igTrack.children);
+        const igPrevBtn = document.getElementById('igPrevBtn');
+        const igNextBtn = document.getElementById('igNextBtn');
+        const igDotsContainer =
+            document.getElementById('igDotsContainer');
+
+        if (igSlides.length > 0) {
+            let indiceInstagram = 0;
+            let igDots = [];
+
+            if (igDotsContainer) {
+                igDotsContainer.innerHTML = '';
+
+                igSlides.forEach((_, index) => {
+                    const dot = document.createElement('span');
+
+                    dot.className = 'dot';
+                    dot.setAttribute('role', 'button');
+                    dot.setAttribute('tabindex', '0');
+                    dot.setAttribute(
+                        'aria-label',
+                        `Ver Reel ${index + 1}`
+                    );
+
+                    igDotsContainer.appendChild(dot);
+                });
+
+                igDots = Array.from(
+                    igDotsContainer.querySelectorAll('.dot')
+                );
+            }
+
+            function mostrarReel(indice) {
+                indiceInstagram =
+                    (indice + igSlides.length) % igSlides.length;
+
+                igTrack.style.transform =
+                    `translateX(-${indiceInstagram * 100}%)`;
+
+                igDots.forEach((dot, index) => {
+                    dot.classList.toggle(
+                        'active',
+                        index === indiceInstagram
+                    );
+                });
+
+                if (window.instgrm?.Embeds) {
+                    window.instgrm.Embeds.process();
+                }
+            }
+
+            igNextBtn?.addEventListener('click', () => {
+                mostrarReel(indiceInstagram + 1);
+            });
+
+            igPrevBtn?.addEventListener('click', () => {
+                mostrarReel(indiceInstagram - 1);
+            });
+
+            igDots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    mostrarReel(index);
+                });
+
+                dot.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        mostrarReel(index);
+                    }
+                });
+            });
+
+            mostrarReel(indiceInstagram);
         }
     }
 
